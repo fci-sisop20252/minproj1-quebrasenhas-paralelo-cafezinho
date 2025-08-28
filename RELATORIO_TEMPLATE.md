@@ -1,6 +1,6 @@
 # Relatório: Mini-Projeto 1 - Quebra-Senhas Paralelo
 
-**Aluno(s):** Nome (Matrícula), Nome (Matrícula),,,  
+**Aluno(s):** Carolina Lee (10440304), Pedro Gabriel Guimarães Fernandes (10437465), Tarik Ferreira (10435895), Pedro Casas Pequeno Júnior (10437031)  
 ---
 
 ## 1. Estratégia de Paralelização
