@@ -143,9 +143,23 @@ int main(int argc, char *argv[]) {
         index_to_password(comeco_intervalo, charset, charset_len, password_len, comeco_password);
         index_to_password(fim_intervalo, charset, charset_len, password_len, fim_password);
         // TODO 4: Usar fork() para criar processo filho
-        // TODO 5: No processo pai: armazenar PID
-        // TODO 6: No processo filho: usar execl() para executar worker
-        // TODO 7: Tratar erros de fork() e execl()
+        // Lembre-se: fork() retorna 0 no filho, PID no pai, -1 em erro
+        pid_t pid = fork();
+        if (pid < 0) {
+            // TODO 7: Tratar erros de fork() e execl()
+            printf("Erro no fork(TODO 7 coordinator)!");//roberto deu erro
+            exit(0);
+        } else if (pid == 0) {
+            // APENAS O FILHO EXECUTA AQUI
+            // TODO 6: No processo filho: usar execl() para executar worker
+            execl("./worker", "worker", target_hash, comeco_password, fim_password, charset, password_len, i, NULL);
+            exit(0);
+        } else {
+            // APENAS O PAI EXECUTA AQUI
+            // TODO 5: No processo pai: armazenar PID
+            workers[i]=pid;
+            printf("ROBERTO, erro no todo 5 do coordinator!");
+        }
     }
     
     printf("\nTodos os workers foram iniciados. Aguardando conclusão...\n");
