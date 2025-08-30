@@ -117,12 +117,12 @@ void save_result(int worker_id, const char *password) {
  */
 int main(int argc, char *argv[]) {
 
-    char test[4] = "aaa";
-    for (int i = 0; i < 10; i++) {
-        printf("Senha %d: %s\n", i, test);
-        increment_password(test, "abc", 3, 3);
-    }
-    return 0;
+    //  char test[4] = "aaa";
+    // for (int i = 0; i < 10; i++) {
+    //     printf("Senha %d: %s\n", i, test);
+    //     increment_password(test, "abc", 3, 3);
+    // }
+    // return 0;
     // Validar argumentos
     if (argc != 7) {
         fprintf(stderr, "Uso interno: %s <hash> <start> <end> <charset> <len> <id>\n", argv[0]);
@@ -172,8 +172,14 @@ int main(int argc, char *argv[]) {
         // TODO 6: Incrementar para a próxima senha
         // DICA: Use a função increment_password implementada acima
         
+        increment_password(current_password, "abc", 3, 3);
+
+        
         // TODO: Verificar se chegou ao fim do intervalo
         // Se sim: terminar loop
+        if(strcmp(current_password, end_password) == 0){
+            break;
+        }
         
         passwords_checked++;
     }
