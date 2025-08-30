@@ -49,8 +49,7 @@ long long calculate_search_space(int charset_len, int password_len) {
  * @param password_len Comprimento da senha
  * @param output Buffer para armazenar a senha gerada
  */
-void index_to_password(long long index, const char *charset, int charset_len, 
-                       int password_len, char *output) {
+void index_to_password(long long index, const char *charset, int charset_len, int password_len, char *output) {
     for (int i = password_len - 1; i >= 0; i--) {
         output[i] = charset[index % charset_len];
         index /= charset_len;
@@ -117,6 +116,10 @@ int main(int argc, char *argv[]) {
     // DICA: Use divisão inteira e distribua o resto entre os primeiros workers
     
     // IMPLEMENTE AQUI:
+    long long total_possibilites = (long long) pow(charset_len, password_len);
+    long long passwords_per_worker = total_possibilites / num_workers;
+    long long remaining = total_possibilites % num_workers; //remaining = 3
+
     // long long passwords_per_worker = ?
     // long long remaining = ?
     
@@ -129,7 +132,16 @@ int main(int argc, char *argv[]) {
     // IMPLEMENTE AQUI: Loop para criar workers
     for (int i = 0; i < num_workers; i++) {
         // TODO: Calcular intervalo de senhas para este worker
+        long long comeco_intervalo = i * passwords_per_worker;
+        long long fim_intervalo = comeco_intervalo + (passwords_per_worker - 1);
+        if (i < remaining) {
+            fim_intervalo++;
+        }
         // TODO: Converter indices para senhas de inicio e fim
+        char comeco_password[password_len - 1];
+        char fim_password[password_len - 1];
+        index_to_password(comeco_intervalo, charset, charset_len, password_len, comeco_password);
+        index_to_password(fim_intervalo, charset, charset_len, password_len, fim_password);
         // TODO 4: Usar fork() para criar processo filho
         // TODO 5: No processo pai: armazenar PID
         // TODO 6: No processo filho: usar execl() para executar worker
