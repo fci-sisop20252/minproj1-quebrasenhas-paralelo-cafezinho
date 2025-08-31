@@ -8,6 +8,7 @@
 #include <time.h>
 #include "hash_utils.h"
 
+
 /**
  * PROCESSO COORDENADOR - Mini-Projeto 1: Quebra de Senhas Paralelo
  * 
@@ -109,14 +110,14 @@ int main(int argc, char *argv[]) {
     unlink(RESULT_FILE);
     
     // Registrar tempo de início
-    time_t start_time = time(NULL);
+    // time_t start_time = time(NULL);
     
     // TODO 2: Dividir o espaço de busca entre os workers
     // Calcular quantas senhas cada worker deve verificar
     // DICA: Use divisão inteira e distribua o resto entre os primeiros workers
     
     // IMPLEMENTE AQUI:
-    long long total_possibilites = (long long) pow(charset_len, password_len);
+    long long total_possibilites = calculate_search_space(charset_len, password_len);
     long long passwords_per_worker = total_possibilites / num_workers;
     long long remaining = total_possibilites % num_workers; //remaining = 3
 
@@ -158,7 +159,6 @@ int main(int argc, char *argv[]) {
             // APENAS O PAI EXECUTA AQUI
             // TODO 5: No processo pai: armazenar PID
             workers[i]=pid;
-            printf("ROBERTO, erro no todo 5 do coordinator!");
         }
     }
     
@@ -173,10 +173,30 @@ int main(int argc, char *argv[]) {
     // - Identificar qual worker terminou
     // - Verificar se terminou normalmente ou com erro
     // - Contar quantos workers terminaram
-    
+    int finalizados = 0;
+    while (finalizados < num_workers) {
+        int status = 0;
+        pid_t pid = wait(&status);
+
+        int define_worker = -1;
+        for (int i = 0; i < num_workers; i++) {
+            if (workers[i] == pid) {
+                define_worker = i;
+                break;
+            }
+        }
+
+        if (WIFEXITED(status)) {
+            int saida = WEXITSTATUS(status);
+            printf("O mano numero %d tem o seguinte coddigo de saida: %d", define_worker, saida);
+        }
+        finalizados++;
+    }
+
+
     // Registrar tempo de fim
-    time_t end_time = time(NULL);
-    double elapsed_time = difftime(end_time, start_time);
+    // time_t end_time = time(NULL);
+    // double elapsed_time = difftime(end_time, start_time);
     
     printf("\n=== Resultado ===\n");
     
@@ -189,9 +209,41 @@ int main(int argc, char *argv[]) {
     // - Fazer parse do formato "worker_id:password"
     // - Verificar o hash usando md5_string()
     // - Exibir resultado encontrado
+    int fd = open(RESULT_FILE, O_RDONLY);
+    if (fd >= 0) {
+        char buffer[1024];
+        ssize_t bytes_lidos = read(fd, buffer, sizeof(buffer) - 1); // -1 para deixar espaço para '\0'
+        close(fd);
     
-    // Estatísticas finais (opcional)
-    // TODO: Calcular e exibir estatísticas de performance
-    
+        if (bytes_lidos > 0) {
+            buffer[bytes_lidos] = '\0'; // Garantir que é uma string válida
+            
+            char *ponteiro = strchr(buffer, ':');
+            if (ponteiro != NULL) {
+                *ponteiro = '\0'; // Agora seguro fazer isso
+                char *worker_id = buffer;
+                char *found_password = ponteiro + 1;
+                
+                char hash_calculado[33];
+                md5_string(found_password, hash_calculado);
+                
+                if (strcmp(hash_calculado, target_hash) == 0) {
+                    printf("✅ SENHA ENCONTRADA!\n");
+                    printf("Worker ID: %s\n", worker_id);
+                    printf("Senha: %s\n", found_password);
+                    printf("Hash MD5: %s\n", hash_calculado);
+                } else {
+                    printf("❌ Falso positivo!\n");
+                    printf("Senha reportada: %s\n", found_password);
+                }
+            } else {
+                printf("❌ Formato inválido no arquivo\n");
+            }
+        } else {
+            printf("❌ Arquivo de resultado vazio\n");
+        }
+    } else {
+        printf("❌ Nenhuma senha encontrada\n");
+    }
     return 0;
 }

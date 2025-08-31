@@ -154,9 +154,12 @@ int main(int argc, char *argv[]) {
     
     // Loop principal de verificação
     while (1) {
-        // TODO 3: Verificar periodicamente se outro worker já encontrou a senha
-        // DICA: A cada PROGRESS_INTERVAL senhas, verificar se arquivo resultado existe
-        
+        if (passwords_checked % PROGRESS_INTERVAL == 0) {
+            if (check_result_exists()) {
+                printf("[Worker %d] Parando: outro worker já encontrou a senha\n", worker_id);
+                break;
+            }
+        }
         // TODO 4: Calcular o hash MD5 da senha atual
         // IMPORTANTE: Use a biblioteca MD5 FORNECIDA - md5_string(senha, hash_buffer)
         md5_string(current_password, computed_hash);
