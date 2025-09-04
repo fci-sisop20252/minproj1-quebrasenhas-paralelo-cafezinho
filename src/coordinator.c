@@ -81,17 +81,17 @@ int main(int argc, char *argv[]) {
     
     // TODO: Adicionar validações dos parâmetros
     // - password_len deve estar entre 1 e 10
-    if(password_len<1 && password_len>10){
+    if(password_len<1 || password_len>10){
         printf("Senha não segue o tamanho adequado");
         return 1;
     }
     // - num_workers deve estar entre 1 e MAX_WORKERS
-    if(num_workers<1 && num_workers>MAX_WORKERS){
-        printf("Número de workers segue o tamanho adequado");
+    if(num_workers<1 || num_workers>MAX_WORKERS){
+        printf("Número de workers não segue o tamanho adequado");
         return 1;
     }
     // - charset não pode ser vazio
-    if (charset_len < 0) {
+    if (charset_len == 0) {
         printf("Charset não pode estar vazio");
         return 1;
     }
@@ -110,7 +110,7 @@ int main(int argc, char *argv[]) {
     unlink(RESULT_FILE);
     
     // Registrar tempo de início
-    // time_t start_time = time(NULL);
+    time_t start_time = time(NULL);
     
     // TODO 2: Dividir o espaço de busca entre os workers
     // Calcular quantas senhas cada worker deve verificar
@@ -139,8 +139,8 @@ int main(int argc, char *argv[]) {
             fim_intervalo++;
         }
         // TODO: Converter indices para senhas de inicio e fim
-        char comeco_password[password_len - 1];
-        char fim_password[password_len - 1];
+        char comeco_password[password_len + 1];
+        char fim_password[password_len + 1];
         index_to_password(comeco_intervalo, charset, charset_len, password_len, comeco_password);
         index_to_password(fim_intervalo, charset, charset_len, password_len, fim_password);
         // TODO 4: Usar fork() para criar processo filho
@@ -152,8 +152,11 @@ int main(int argc, char *argv[]) {
             exit(0);
         } else if (pid == 0) {
             // APENAS O FILHO EXECUTA AQUI
+            char passlen_str[16], workerid_str[16];
+            sprintf(passlen_str, "%d", password_len);
+            sprintf(workerid_str, "%d", i);
             // TODO 6: No processo filho: usar execl() para executar worker
-            execl("./worker", "worker", target_hash, comeco_password, fim_password, charset, password_len, i, NULL);
+            execl("./worker", "worker", target_hash, comeco_password, fim_password, charset, passlen_str, workerid_str, (char*)NULL);
             exit(0);
         } else {
             // APENAS O PAI EXECUTA AQUI
@@ -181,6 +184,7 @@ int main(int argc, char *argv[]) {
         int define_worker = -1;
         for (int i = 0; i < num_workers; i++) {
             if (workers[i] == pid) {
+                printf("Esta tentando definir o worker %d \n", i );
                 define_worker = i;
                 break;
             }
@@ -188,15 +192,15 @@ int main(int argc, char *argv[]) {
 
         if (WIFEXITED(status)) {
             int saida = WEXITSTATUS(status);
-            printf("O mano numero %d tem o seguinte coddigo de saida: %d", define_worker, saida);
+            printf("O mano numero %d tem o seguinte coddigo de saida: %d \n", define_worker, saida);
         }
         finalizados++;
     }
 
 
     // Registrar tempo de fim
-    // time_t end_time = time(NULL);
-    // double elapsed_time = difftime(end_time, start_time);
+    time_t end_time = time(NULL);
+    double elapsed_time = difftime(end_time, start_time);
     
     printf("\n=== Resultado ===\n");
     
@@ -223,27 +227,35 @@ int main(int argc, char *argv[]) {
                 *ponteiro = '\0'; // Agora seguro fazer isso
                 char *worker_id = buffer;
                 char *found_password = ponteiro + 1;
+
+                size_t len = strlen(found_password);
+                if (len > 0 && (found_password[len - 1] == '\n' || found_password[len - 1] == '\r')) {
+                    found_password[len - 1] = '\0';
+                }
                 
                 char hash_calculado[33];
                 md5_string(found_password, hash_calculado);
+                printf("Ponteiro = %s \n", ponteiro  );
+                printf("Found password = %s \n", found_password);
+                printf("%s\n", hash_calculado);
                 
                 if (strcmp(hash_calculado, target_hash) == 0) {
-                    printf("✅ SENHA ENCONTRADA!\n");
+                    printf("SENHA ENCONTRADA!\n");
                     printf("Worker ID: %s\n", worker_id);
                     printf("Senha: %s\n", found_password);
                     printf("Hash MD5: %s\n", hash_calculado);
                 } else {
-                    printf("❌ Falso positivo!\n");
+                    printf("Falso positivo!\n");
                     printf("Senha reportada: %s\n", found_password);
                 }
             } else {
-                printf("❌ Formato inválido no arquivo\n");
+                printf("Formato inválido no arquivo\n");
             }
         } else {
-            printf("❌ Arquivo de resultado vazio\n");
+            printf("Arquivo de resultado vazio\n");
         }
     } else {
-        printf("❌ Nenhuma senha encontrada\n");
+        printf("Nenhuma senha encontrada\n");
     }
     return 0;
 }
