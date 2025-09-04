@@ -81,12 +81,12 @@ int main(int argc, char *argv[]) {
     
     // TODO: Adicionar validações dos parâmetros
     // - password_len deve estar entre 1 e 10
-    if(password_len<1 || password_len>10){
+    if(password_len<1 && password_len>10){
         printf("Senha não segue o tamanho adequado");
         return 1;
     }
     // - num_workers deve estar entre 1 e MAX_WORKERS
-    if(num_workers<1 || num_workers>MAX_WORKERS){
+    if(num_workers<1 && num_workers>MAX_WORKERS){
         printf("Número de workers segue o tamanho adequado");
         return 1;
     }
