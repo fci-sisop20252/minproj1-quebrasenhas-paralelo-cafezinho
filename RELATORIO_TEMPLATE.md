@@ -106,6 +106,7 @@ O speedup é o tempo do teste com 1 worker dividido pelo tempo com 4 workers.
 **Qual foi o maior desafio técnico que você enfrentou?**
 [Descreva um problema e como resolveu. Ex: "Tive dificuldade com o incremento de senha, mas resolvi tratando-o como um contador em base variável"]
 
+Tivemos problema com o wait() sendo bem sincero tivemos dificuldade de entender como ele funcionava, tivemos que recorrer a sites e a documentação para entender como ele funcionava e assim aplica-lo de forma correta. Entendemos que ele era importante para fazer com que os processos sejam sincronizados e para evitar processos zumbis.
 ---
 
 ## Comandos de Teste Utilizados
