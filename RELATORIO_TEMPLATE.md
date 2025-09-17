@@ -8,7 +8,7 @@
 
 **Como você dividiu o espaço de busca entre os workers?**
 
-O nosso algoritmo nos usamos 3 variaveis long long para guardar o total de posibilidades, o número de senhas por worker e os que sobram da divisão,
+No nosso algoritmo, usamos 3 variaveis long long para guardar o total de posibilidades, o número de senhas por worker e os que sobram da divisão,
 primeiro achamos  total de possibilidades usando a calculate_search_space para calcular a quantidade de senhas possiveis para o charset e tamanho de senha escolhido,
 depois pegamos esse total e dividimos pelo número de workers, assim obtendo quantas senhas cada worker deve procurar, porém como essa divisão pode dar algumas sobras
 também guardamos o resto dessa divisão para dividir essas senhas que sobraram, entre alguns workers quando assimilamos a quantidade de senhas que eles iram que procurar ao criar eles.
@@ -78,9 +78,13 @@ Os processos são criados usando um loop que percorre o número de workers desej
 [Explique como você implementou uma escrita atômica e como isso evita condições de corrida]
 Leia sobre condições de corrida (aqui)[https://pt.stackoverflow.com/questions/159342/o-que-%C3%A9-uma-condi%C3%A7%C3%A3o-de-corrida]
 
+A operação open(), com os parâmetros O_CREAT, O_EXCL e O_WRONLY, faz com que o kernel garante que apenas um processo pode cirar o arquivo com sucesso. Para previnir as condições de corrida, quando os workers tentam salvar os resultados simultaneamente, apenas o primeiro que chamar na função open() terá sucesso.
+
 **Como o coordinator consegue ler o resultado?**
 
 [Explique como o coordinator lê o arquivo de resultado e faz o parse da informação]
+
+O coordinator tenta abrir password_found.txt para leitura, depois, lê todo o conteúdo do arquivo, e então, divide a string usando ":" para separar o ID do worker e a senha encontrada, verifica o hash encontrado com o hash que queremos encontrar, se der certo, imprime o resultado.
 
 ---
 
