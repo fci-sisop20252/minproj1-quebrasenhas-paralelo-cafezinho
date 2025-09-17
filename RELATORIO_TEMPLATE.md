@@ -8,12 +8,19 @@
 
 **Como você dividiu o espaço de busca entre os workers?**
 
-[Explique seu algoritmo de divisão]
+O nosso algoritmo nos usamos 3 variaveis long long para guardar o total de posibilidades, o número de senhas por worker e os que sobram da divisão,
+primeiro achamos  total de possibilidades usando a calculate_search_space para calcular a quantidade de senhas possiveis para o charset e tamanho de senha escolhido,
+depois pegamos esse total e dividimos pelo número de workers, assim obtendo quantas senhas cada worker deve procurar, porém como essa divisão pode dar algumas sobras
+também guardamos o resto dessa divisão para dividir essas senhas que sobraram, entre alguns workers quando assimilamos a quantidade de senhas que eles iram que procurar ao criar eles.
 
 **Código relevante:** Cole aqui a parte do coordinator.c onde você calcula a divisão:
 ```c
 // Cole seu código de divisão aqui
 ```
+    long long total_possibilites = calculate_search_space(charset_len, password_len);
+    long long passwords_per_worker = total_possibilites / num_workers;
+    long long remaining = total_possibilites % num_workers; 
+---
 
 ---
 
