@@ -28,11 +28,45 @@ também guardamos o resto dessa divisão para dividir essas senhas que sobraram,
 
 **Descreva como você usou fork(), execl() e wait() no coordinator:**
 
-[Explique em um parágrafo como você criou os processos, passou argumentos e esperou pela conclusão]
+Os processos são criados usando um loop que percorre o número de workers desejados. Para cada worker, calcula-se o intervalo de senhas que ele deve testar, convertendo os índices de início e fim em strings de senha usando a função index_to_password. Em seguida, fork() é usado para criar um processo filho; no filho (pid == 0), chamamos execl() para executar o programa worker, passando como argumentos o hash alvo, as senhas de início e fim, o charset, o tamanho da senha e o ID do worker. O processo pai (pid > 0) armazena o PID do filho em um array para controle. Após criar todos os filhos, o pai entra em um loop com wait(), que aguarda cada filho terminar, captura seu status de saída e identifica qual worker terminou com base no PID, permitindo contar e monitorar a conclusão de todos os workers de forma organizada, evitando processos zumbis.
+
 
 **Código do fork/exec:**
 ```c
-// Cole aqui seu loop de criação de workers
+// IMPLEMENTE AQUI: Loop para criar workers
+    for (int i = 0; i < num_workers; i++) {
+        // TODO: Calcular intervalo de senhas para este worker
+        long long comeco_intervalo = i * passwords_per_worker;
+        long long fim_intervalo = comeco_intervalo + (passwords_per_worker - 1);
+        if (i < remaining) {
+            fim_intervalo++;
+        }
+        // TODO: Converter indices para senhas de inicio e fim
+        char comeco_password[password_len + 1];
+        char fim_password[password_len + 1];
+        index_to_password(comeco_intervalo, charset, charset_len, password_len, comeco_password);
+        index_to_password(fim_intervalo, charset, charset_len, password_len, fim_password);
+        // TODO 4: Usar fork() para criar processo filho
+        // Lembre-se: fork() retorna 0 no filho, PID no pai, -1 em erro
+        pid_t pid = fork();
+        if (pid < 0) {
+            // TODO 7: Tratar erros de fork() e execl()
+            printf("Erro no fork(TODO 7 coordinator)!");//roberto deu erro
+            exit(0);
+        } else if (pid == 0) {
+            // APENAS O FILHO EXECUTA AQUI
+            char passlen_str[16], workerid_str[16];
+            sprintf(passlen_str, "%d", password_len);
+            sprintf(workerid_str, "%d", i);
+            // TODO 6: No processo filho: usar execl() para executar worker
+            execl("./worker", "worker", target_hash, comeco_password, fim_password, charset, passlen_str, workerid_str, (char*)NULL);
+            exit(0);
+        } else {
+            // APENAS O PAI EXECUTA AQUI
+            // TODO 5: No processo pai: armazenar PID
+            workers[i]=pid;
+        }
+    }
 ```
 
 ---
