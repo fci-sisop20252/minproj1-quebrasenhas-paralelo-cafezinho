@@ -94,12 +94,13 @@ O speedup é o tempo do teste com 1 worker dividido pelo tempo com 4 workers.
 
 | Teste | 1 Worker | 2 Workers | 4 Workers | Speedup (4w) |
 |-------|----------|-----------|-----------|--------------|
-| Hash: 202cb962ac59075b964b07152d234b70<br>Charset: "0123456789"<br>Tamanho: 3<br>Senha: "123" | ___s | ___s | ___s | ___ |
-| Hash: 5d41402abc4b2a76b9719d911017c592<br>Charset: "abcdefghijklmnopqrstuvwxyz"<br>Tamanho: 5<br>Senha: "hello" | ___s | ___s | ___s | ___ |
+| Hash: 202cb962ac59075b964b07152d234b70<br>Charset: "0123456789"<br>Tamanho: 3<br>Senha: "123" | 0m0.006s | 0m0.007s | 0m0.007s | 0.86 |
+| Hash: 5d41402abc4b2a76b9719d911017c592<br>Charset: "abcdefghijklmnopqrstuvwxyz"<br>Tamanho: 5<br>Senha: "hello" | 2m2.454s (122.454s) | 4m17.682s (257.682s) | 0m54.947s (54.947s) | 2.23 |
 
 **O speedup foi linear? Por quê?**
 [Analise se dobrar workers realmente dobrou a velocidade e explique o overhead de criar processos]
-
+Não, o speedup não foi linear. Para ele ser teriamos que ter um resultad0 4 vezes mais rápido, mas obtivemos: 0.86x (piora no desempenho) e 2.23x (56% da eficiência desejada).
+O overhead é o custo adicional envolvido na operação de um sistema, na criação de processos ele representa todo o tempo e recursos gastos para criar e gerenciar esses processos. As vezes ele pode superar o ganho que deveriamos ter com o paralelismo, o que faz com que mesmo com mais workers, o tempo de execução continua o mesmo ou até piora, como é o caso do 123. Como a senha é pequena e o espaço de busca também, o processo de criar tudo, competir pelos recuros da cpu, e a troca de contexto entre os processos, faz com que o ganho de desempenho seja insignificante ou até mesmo nulo. Já no "hello", podemos ver uma melhora já que o espaço de busca é bem maior. Se o overhead ddo gerenciamento de processos for maior que o trabalho, o paralelismo não vale a pena.
 ---
 
 ## 5. Desafios e Aprendizados
